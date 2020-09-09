@@ -39,30 +39,59 @@ const Cart: React.FC = () => {
   const { increment, decrement, products } = useCart();
 
   function handleIncrement(id: string): void {
-    // TODO
+    increment(id);
   }
 
   function handleDecrement(id: string): void {
-    // TODO
+    decrement(id);
   }
 
   const cartTotal = useMemo(() => {
-    // TODO RETURN THE SUM OF THE QUANTITY OF THE PRODUCTS IN THE CART
+    const productsInCart = products.filter(product => {
+      if (product.quantity) {
+        return product;
+      }
+    });
 
-    return formatValue(0);
+    if (productsInCart.length === 0) {
+      return formatValue(0);
+    }
+
+    const totalValues = productsInCart.map(
+      cartProduct => cartProduct.quantity * cartProduct.price,
+    );
+
+    const addedValues = totalValues.reduce((sum, total) => sum + total, 0);
+
+    return formatValue(addedValues);
   }, [products]);
 
   const totalItensInCart = useMemo(() => {
-    // TODO RETURN THE SUM OF THE QUANTITY OF THE PRODUCTS IN THE CART
+    const productQuantity = products
+      .map(product => product.quantity)
+      .filter(quantity => quantity !== undefined);
 
-    return 0;
+    if (productQuantity.length === 0) {
+      return 0;
+    }
+
+    const totalQuantity = productQuantity.reduce(
+      (sum, total) => sum + total,
+      0,
+    );
+
+    return totalQuantity;
   }, [products]);
 
   return (
     <Container>
       <ProductContainer>
         <ProductList
-          data={products}
+          data={products.filter(p => {
+            if (p.quantity) {
+              return p;
+            }
+          })}
           keyExtractor={item => item.id}
           ListFooterComponent={<View />}
           ListFooterComponentStyle={{
@@ -79,10 +108,14 @@ const Cart: React.FC = () => {
                   </ProductSinglePrice>
 
                   <TotalContainer>
-                    <ProductQuantity>{`${item.quantity}x`}</ProductQuantity>
+                    <ProductQuantity>
+{' '}
+{item.quantity}x</ProductQuantity>
 
                     <ProductPrice>
-                      {formatValue(item.price * item.quantity)}
+                      {item.quantity
+                        ? formatValue(item.price * item.quantity)
+                        : formatValue(0)}
                     </ProductPrice>
                   </TotalContainer>
                 </ProductPriceContainer>
